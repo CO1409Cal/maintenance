@@ -10,12 +10,7 @@ class Machine(BaseModel):
    name: str
    maintenanceAlerts: str
    maintenanceLog: dict[str,str,datetime.datetime]
-   # def __init__(self):
-   #     self.online = True
-   #     self.uptime = 0.0
-   #     self.name = ""
-   #     self.maintenanceAlerts = ""
-   #     self.maintenanceLog = []
+
 
 class Maintenance(BaseModel):
      maintenanceId: int
