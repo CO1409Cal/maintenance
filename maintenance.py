@@ -46,9 +46,19 @@ def create(Maintenance):
     return maintenanceTask
 
 
+def automaticMaintenance(Maintenance):
+    readFile(machines.json)
+
+
 def writeToFile(data,filename):
     with open(filename,"a") as file:
         file.write(json.dumps(data.dict(), default=str))
+
+def readFile(filename):
+    with open(filename,"r") as file:
+        data = file.read(json.dump())
+    return data
+
 
 #def scheduleMaintenance(machineName):
 #    global menuChoice
