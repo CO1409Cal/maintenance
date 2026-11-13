@@ -25,13 +25,6 @@ class Maintenance(BaseModel):
     priority: Priority = Priority.low
     cost: float  = 0.0
 
-    #def __init__(self):
-    #    self.maintenanceId = 0
-    #    self.type = ""
-    #    self.date = datetime.date
-    #    self.downtime = 0
-    #    self.priority = Priority
-    #    self.cost = 0.0
 
 
 
@@ -39,7 +32,7 @@ def create(Maintenance):
     maintenanceTask = Maintenance(
         maintenanceId = 1, #Automatically increment off last ID
         type = input(str("Enter type of maintenance \n Preventative \n Routine \n Urgent \n : ")),
-        date = datetime.datetime(input("Enter date of maintenance YYYY,MM,DD,HH: ")),
+        date = datetime.datetime.strptime(input("Enter date of maintenance YYYY,MM,DD,HH: ")),
         downtime = input("Enter downtime in hours: "),
         priority = Priority.input("Priority: "),
         cost = input("Enter the cost of the Maintenance: ")
@@ -73,17 +66,12 @@ def writeToFile(data,filename):
 
 def readFile(filename):
     with open(filename,"r") as file:
-        data = file.read(json.dump())
+        data = file.read()
+        data = toDict(data)
     return data
 
-
-#def scheduleMaintenance(machineName):
-#    global menuChoice
-#    Machine.name = machineName
-#    date = input("Enter the date for maintenance (YYYY-MM-DD): ")
-#    maintainWorkload = input("Enter the estimated time the task will require (HHH-MM): ")
-#
-#    Machine.maintenanceLog = date + maintainWorkload
+def toDict(data):
+    return json.loads(data)
 
 def main():
     while True:
