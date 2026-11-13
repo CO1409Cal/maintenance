@@ -47,14 +47,14 @@ def automaticMaintenance(Maintenance):
 
 
     for i in machineData:
-        if i == "Uptime:":
-            if i + 1 >= dayInSeconds:
+        if machineData[i] == "Uptime:":
+            if machineData[i+1] >= dayInSeconds:
                 maintenanceTask = Maintenance(
                     maintenanceId = 1,
                     type = "Automatic",
                     date = todaysDate,
                     downtime = 1,
-                    Priority = Priority.medium,
+                    priority = Priority.medium,
                     cost = 10,
                 )
                 return maintenanceTask
