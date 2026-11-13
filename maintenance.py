@@ -1,53 +1,70 @@
+from enum import Enum
 from pydantic import BaseModel
 from pydantic.dataclasses import dataclass
 import datetime
 import json
 
+class Priority(str, Enum):
+    high = "high"
+    medium = "medium"
+    low = "low"
 
 class Machine(BaseModel):
    online: bool
    uptime: float
    name: str
    maintenanceAlerts: str
-   maintenanceLog: dict[str,str,datetime.datetime]
+   maintenanceLog: dict[str,dict[str,datetime.datetime]]
 
 
 class Maintenance(BaseModel):
-     maintenanceId: int
-     type: str
-     date: datetime.date
-     downtime: int
-     priority: Priority 
-     cost: float  
-       
-        #def __init__(self):
-        #    self.maintenanceId = 0
-        #    self.type = ""
-        #    self.date = datetime.date
-        #    self.downtime = 0
-        #    self.priority = Priority
-        #    self.cost = 0.0
+    maintenanceId: int = 0
+    type: str = ""
+    date: datetime.date
+    downtime: int = 0
+    priority: Priority = Priority.low
+    cost: float  = 0.0
 
-class Priority:
-    def __init__(self):
-        self.high 
-        self.medium
-        self.low
+    #def __init__(self):
+    #    self.maintenanceId = 0
+    #    self.type = ""
+    #    self.date = datetime.date
+    #    self.downtime = 0
+    #    self.priority = Priority
+    #    self.cost = 0.0
+
+
 
 def create(Maintenance):
     maintenanceTask = Maintenance(
         maintenanceId = 1, #Automatically increment off last ID
         type = input(str("Enter type of maintenance \n Preventative \n Routine \n Urgent \n : ")),
-        date = input("Enter date of maintenance DD/MM/YYYY: "),
+        date = datetime.datetime(input("Enter date of maintenance YYYY,MM,DD,HH: ")),
         downtime = input("Enter downtime in hours: "),
-        priority = input("Priority: "),
+        priority = Priority.input("Priority: "),
         cost = input("Enter the cost of the Maintenance: ")
     )
     return maintenanceTask
 
 
 def automaticMaintenance(Maintenance):
-    readFile(machines.json)
+    machineData = readFile("machines.json")
+    dayInSeconds = (24*60) *60 #24 hours in seconds
+    todaysDate = datetime.datetime(2026, 11, 12, 14, 55, 58) #12th november 2026 14 hours 55 minutes 58 zeconds
+
+
+    for i in machineData:
+        if i == "Uptime:":
+            if i + 1 >= dayInSeconds:
+                maintenanceTask = Maintenance(
+                    maintenanceId = 1,
+                    type = "Automatic",
+                    date = todaysDate,
+                    downtime = 1,
+                    Priority = Priority.medium,
+                    cost = 10,
+                )
+                return maintenanceTask
 
 
 def writeToFile(data,filename):
