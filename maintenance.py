@@ -10,15 +10,16 @@ class Priority(str, Enum):
     low = "low"
 
 class Machine(BaseModel):
+   name: str
    online: bool
    uptime: float
-   name: str
    maintenanceAlerts: str
    maintenanceLog: dict[str,dict[str,datetime.datetime]]
 
 
 class Maintenance(BaseModel):
-    maintenanceId: int = 0
+    maintenanceId: int = 0 
+    description: str = ""
     type: str = ""
     date: datetime.date
     downtime: int = 0
@@ -27,16 +28,23 @@ class Maintenance(BaseModel):
 
 
 
-
 def create(Maintenance):
     maintenanceTask = Maintenance(
         maintenanceId = findNextID("machines.json"), #Automatically increment off last ID
-        type = input(str("Enter type of maintenance \n Preventative \n Routine \n Urgent \n : ")),
-        date = datetime.datetime.strptime(input("Enter date of maintenance YYYY,MM,DD,HH,MM: "), "%Y,%m,%d,%H,%M").date(),
+        description = input(str("Enter description of maintenance : ")),
+        date = datetime.datetime.strptime(input("Enter date of maintenance YYYY,MM,DD: "), "%Y,%m,%d").date(),
         downtime = input("Enter downtime in hours: "),
         priority = Priority(input("Priority: ")),
         cost = input("Enter the cost of the Maintenance: ")
     )
+    downtime = maintenanceTask["downtime"]
+    if downtime > 1 and downtime < 3 :
+        maintenanceTask["type"] = "Routine"
+    elif maintenanceTask["priority"] == "high" :
+        maintenanceTask["type"] = "Urgent"
+    else:
+        maintenanceTask["type"] = "Preventative"
+
     return maintenanceTask
 
 
@@ -48,10 +56,10 @@ def automaticMaintenance(Maintenance):
 
     for i in machineData:
         if machineData[i] == "Uptime:":
-            if machineData[i+1] >= dayInSeconds:
+            if machineData[i+1] >= dayInSeconds or i["maintenanceAlerts"] != "":
                 maintenanceTask = Maintenance(
                     maintenanceId = findNextID("machines.json"),
-                    type = "Automatic",
+                    description = f"Automatic, {i["maintenanceAlerts"]}",
                     date = todaysDate,
                     downtime = 1,
                     priority = Priority.medium,
@@ -63,7 +71,7 @@ def automaticMaintenance(Maintenance):
 #Helper functions
 def writeToFile(data,filename):
     with open(filename,"a") as file:
-        file.write(json.dumps(data.dict(), default=str))
+        file.write(json.dumps(data.model_dump(), default=str))
 
 def readFile(filename):
     with open(filename,"r") as file:
@@ -92,7 +100,6 @@ def findNextID(filename):
 
 def main():
     while True:
-        writeToFile(create(Maintenance), "maintenance.json")
         print(Maintenance)
 
 if __name__ == "__main__":
