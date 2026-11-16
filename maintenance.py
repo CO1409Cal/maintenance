@@ -43,7 +43,7 @@ def create(Maintenance):
 def automaticMaintenance(Maintenance):
     machineData = readFile("machines.json")
     dayInSeconds = (24*60) *60 #24 hours in seconds
-    todaysDate = datetime.datetime(2026, 11, 12, 14, 55, 58) #12th november 2026 14 hours 55 minutes 58 zeconds
+    todaysDate = datetime.datetime(2026, 11, 16, 14, 55, 58) #16th november 2026 14 hours 55 minutes 58 zeconds
 
 
     for i in machineData:
@@ -59,7 +59,8 @@ def automaticMaintenance(Maintenance):
                 )
                 return maintenanceTask
 
-
+#-------------------------------------------------------------------------#
+#Helper functions
 def writeToFile(data,filename):
     with open(filename,"a") as file:
         file.write(json.dumps(data.dict(), default=str))
@@ -72,6 +73,21 @@ def readFile(filename):
 
 def toDict(data):
     return json.loads(data)
+
+def findlastID(filename):
+    machines = readFile(filename)
+    nextid = 0
+    for i in machines:
+        if machines[maintenanceLog][id] > nextid:
+            nextid = machines[maintenanceLog][id] + 1
+    return nextid
+
+#--------------------#
+
+
+
+
+
 
 def main():
     while True:
