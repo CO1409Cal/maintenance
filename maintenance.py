@@ -29,15 +29,16 @@ def create(Maintenance):
         priority = Priority(input("Priority: ")),
         cost = input("Enter the cost of the Maintenance: ")
     )
-    downtime = maintenanceTask["downtime"]
+    maintenanceData = maintenanceTask.model_dump()
+    downtime = maintenanceData["downtime"]
     if downtime > 1 and downtime < 3 :
-        maintenanceTask["type"] = "Routine"
-    elif maintenanceTask["priority"] == "high" :
-        maintenanceTask["type"] = "Urgent"
+        maintenanceData["type"] = "Routine"
+    elif maintenanceData["priority"] == "high" :
+        maintenanceData["type"] = "Urgent"
     else:
-        maintenanceTask["type"] = "Preventative"
+        maintenanceData["type"] = "Preventative"
 
-    return maintenanceTask
+    return maintenanceData
 
 
 def automaticMaintenance(Maintenance):
@@ -47,23 +48,23 @@ def automaticMaintenance(Maintenance):
 
 
     for i in machineData:
-        if machineData[i] == "Uptime:":
-            if machineData[i+1] >= dayInSeconds or i["maintenanceAlerts"] != "":
-                maintenanceTask = Maintenance(
-                    maintenanceId = findNextID("machines.json"),
-                    description = f"Automatic, {i["maintenanceAlerts"]}",
-                    date = todaysDate,
-                    downtime = 1,
-                    priority = Priority.medium,
-                    cost = 10,
-                )
-                return maintenanceTask
+        if i["uptime"] >= dayInSeconds or i["maintenanceAlerts"] != "":
+            maintenanceTask = Maintenance(
+                maintenanceId = findNextID("machines.json"),
+                description = f"Automatic, {i["maintenanceAlerts"]}",
+                date = todaysDate.date(),
+                downtime = 1,
+                priority = Priority.medium,
+                cost = 10,
+            )
+            writeToFile(maintenanceTask.model_dump(), "maintenance.json")
 
 #-------------------------------------------------------------------------#
 #Helper functions
 def writeToFile(data,filename):
     with open(filename,"a") as file:
-        file.write(json.dumps(data.model_dump(), default=str))
+        file.write(json.dumps(data, default=str))
+        file.write("\n")
 
 def readFile(filename):
     with open(filename,"r") as file:
@@ -81,7 +82,9 @@ def findNextID(filename):
         for log in machine["maintenanceLog"].values():
             if log["id"] > nextid:
                 nextid = log["id"] 
-    return nextid + 1
+    nextid += 1
+    return nextid
+    
 
 #--------------------#
 
@@ -92,6 +95,8 @@ def findNextID(filename):
 
 def main():
     while True:
+        automaticMaintenance(Maintenance)
+        writeToFile(create(Maintenance), "maintenance.json")
         print(Maintenance)
 
 if __name__ == "__main__":
