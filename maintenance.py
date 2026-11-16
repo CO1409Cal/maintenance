@@ -9,13 +9,6 @@ class Priority(str, Enum):
     medium = "medium"
     low = "low"
 
-class Machine(BaseModel):
-   name: str
-   online: bool
-   uptime: float
-   maintenanceAlerts: str
-   maintenanceLog: dict[str,dict[str,datetime.datetime]]
-
 
 class Maintenance(BaseModel):
     maintenanceId: int = 0 
@@ -25,7 +18,6 @@ class Maintenance(BaseModel):
     downtime: int = 0
     priority: Priority = Priority.low
     cost: float  = 0.0
-
 
 
 def create(Maintenance):
