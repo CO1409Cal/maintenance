@@ -30,11 +30,11 @@ class Maintenance(BaseModel):
 
 def create(Maintenance):
     maintenanceTask = Maintenance(
-        maintenanceId = 1, #Automatically increment off last ID
+        maintenanceId = findNextID("machines.json"), #Automatically increment off last ID
         type = input(str("Enter type of maintenance \n Preventative \n Routine \n Urgent \n : ")),
-        date = datetime.datetime.strptime(input("Enter date of maintenance YYYY,MM,DD,HH: ")),
+        date = datetime.datetime.strptime(input("Enter date of maintenance YYYY,MM,DD,HH,MM: "), "%Y,%m,%d,%H,%M").date(),
         downtime = input("Enter downtime in hours: "),
-        priority = Priority.input("Priority: "),
+        priority = Priority(input("Priority: ")),
         cost = input("Enter the cost of the Maintenance: ")
     )
     return maintenanceTask
@@ -50,7 +50,7 @@ def automaticMaintenance(Maintenance):
         if machineData[i] == "Uptime:":
             if machineData[i+1] >= dayInSeconds:
                 maintenanceTask = Maintenance(
-                    maintenanceId = 1,
+                    maintenanceId = findNextID("machines.json"),
                     type = "Automatic",
                     date = todaysDate,
                     downtime = 1,
@@ -74,13 +74,14 @@ def readFile(filename):
 def toDict(data):
     return json.loads(data)
 
-def findlastID(filename):
+def findNextID(filename):
     machines = readFile(filename)
     nextid = 0
-    for i in machines:
-        if machines[maintenanceLog][id] > nextid:
-            nextid = machines[maintenanceLog][id] + 1
-    return nextid
+    for machine in machines:
+        for log in machine["maintenanceLog"].values():
+            if log["id"] > nextid:
+                nextid = log["id"] 
+    return nextid + 1
 
 #--------------------#
 
