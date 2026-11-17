@@ -37,6 +37,7 @@ def create(Maintenance):
         maintenanceData["type"] = "Urgent"
     else:
         maintenanceData["type"] = "Preventative"
+    print("Maintenance Task Created: ")
 
     return maintenanceData
 
@@ -63,7 +64,7 @@ def automaticMaintenance(Maintenance):
 #Helper functions
 def writeToFile(data,filename):
     with open(filename,"a") as file:
-        file.write(json.dumps(data, default=str))
+        file.write(json.dumps(data, separators=(',', ':'), default=str))
         file.write("\n")
 
 def readFile(filename):
