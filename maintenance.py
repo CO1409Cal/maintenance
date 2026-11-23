@@ -67,7 +67,18 @@ def modifyTask():
     maintenanceData = readFile("maintenance.json")
     for i in maintenanceData:
         if i["maintenanceId"] == taskID:
-            
+            [description] = input("Enter new description (leave blank to keep current): ") or i["description"]
+            [date] = input("Enter new date (YYYY-MM-DD) (leave blank to keep current): ") or i["date"]
+            [downtime] = input("Enter new downtime in hours (leave blank to keep current): ") or i["downtime"]
+            [priority] = input("Enter new priority (high, medium, low) (leave blank to keep current): ") or i["priority"]
+            [cost] = input("Enter new cost (leave blank to keep current): ") or i["cost"]
+            i["description"] = description
+            i["date"] = date
+            i["downtime"] = downtime
+            i["priority"] = priority
+            i["cost"] = cost
+            writeToFile(maintenanceData, "maintenance.json", Isjson="no")
+            print(f"Task with ID {taskID} has been modified.")
             pass
 
 def deleteTask():
@@ -143,10 +154,6 @@ def findNextID(filename):
     
 
 #--------------------#
-
-
-
-
 
 
 def main():
