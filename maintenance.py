@@ -61,6 +61,26 @@ def automaticMaintenance(Maintenance):
             )
             writeToFile(maintenanceTask.model_dump(), "maintenance.json")
 
+
+def modifyTask():
+    taskID = int(input("Enter the maintenance ID of the task you want to modify: "))
+    maintenanceData = readFile("maintenance.json")
+    for i in maintenanceData:
+        if i["maintenanceId"] == taskID:
+            
+            pass
+
+def deleteTask():
+    taskID = int(input("Enter the maintenance ID of the task you want to delete: "))
+    maintenanceData = readFile("maintenance.json")
+    for i in maintenanceData:
+        if i["maintenanceId"] == taskID:
+            maintenanceData.remove(i)
+            writeToFile(maintenanceData, "maintenance.json", Isjson="no")
+            print(f"Task with ID {taskID} has been deleted.")
+            return
+    print(f"No task found with ID {taskID}.")
+
 #-------------------------------------------------------------------------#
 #Helper functions
 def writeToFile(data,filename,Isjson="yes"):
