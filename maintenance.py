@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from pydantic.dataclasses import dataclass
 import datetime
 import json
+import os
 
 class Priority(str, Enum):
     high = "high"
@@ -14,7 +15,7 @@ class Maintenance(BaseModel):
     maintenanceId: int = 0 
     description: str = ""
     type: str = ""
-    date: datetime.date
+    date: str
     downtime: int = 0
     priority: Priority = Priority.low
     cost: float  = 0.0
@@ -24,7 +25,7 @@ def create(Maintenance):
     maintenanceTask = Maintenance(
         maintenanceId = findNextID("machines.json"), #Automatically increment off last ID
         description = input(str("Enter description of maintenance : ")),
-        date = datetime.datetime.strptime(input("Enter date of maintenance YYYY,MM,DD: "), "%Y,%m,%d").date(),
+        date = str(datetime.datetime.strptime(input("Enter date of maintenance YYYY,MM,DD: "), "%Y,%m,%d").date()),
         downtime = input("Enter downtime in hours: "),
         priority = Priority(input("Priority: ")),
         cost = input("Enter the cost of the Maintenance: ")
@@ -45,7 +46,7 @@ def create(Maintenance):
 def automaticMaintenance(Maintenance):
     machineData = readFile("machines.json")
     dayInSeconds = (24*60) *60 #24 hours in seconds
-    todaysDate = datetime.datetime(2026, 11, 16, 14, 55, 58) #16th november 2026 14 hours 55 minutes 58 zeconds
+    todaysDate = datetime.datetime(2026, 11, 23, 9, 58, 32) #23rd november 2026 09 hours 58 minutes 32 zeconds
 
 
     for i in machineData:
@@ -53,7 +54,7 @@ def automaticMaintenance(Maintenance):
             maintenanceTask = Maintenance(
                 maintenanceId = findNextID("machines.json"),
                 description = f"Automatic, {i["maintenanceAlerts"]}",
-                date = todaysDate.date(),
+                date = str(todaysDate.date()),
                 downtime = 1,
                 priority = Priority.medium,
                 cost = 10,
@@ -62,10 +63,16 @@ def automaticMaintenance(Maintenance):
 
 #-------------------------------------------------------------------------#
 #Helper functions
-def writeToFile(data,filename):
-    with open(filename,"a") as file:
-        file.write(json.dumps(data, separators=(',', ':'), default=str))
+def writeToFile(data,filename,Isjson="yes"):
+    if Isjson == "yes":
+        ToJson(filename)
+    
+    with open(filename,"a+") as file:
+
+        jsondata = json.dumps(data, indent=4)
+        file.write(jsondata)
         file.write("\n")
+
 
 def readFile(filename):
     with open(filename,"r") as file:
@@ -76,6 +83,27 @@ def readFile(filename):
 def toDict(data):
     return json.loads(data)
 
+def ToJson(filename):
+    with open(filename, "r+") as file:
+                # if not os.path.exists(filename) or os.path.getsize(filename) == 0:
+        #     file.write("[")
+        # else:
+        #     file.seek(0, os.SEEK_END)
+        #     file.seek(file.tell() - 2)
+        #     # file.seek(", /n")
+        lines = file.read().strip()
+
+        if "[" not in lines:
+            file.write("[")
+        elif "]" in lines:
+            file.seek(0, os.SEEK_END)
+            file.seek(file.tell() - 2)
+            file.write(",\n")
+
+        if "]" not in lines:
+            file.write("]")
+
+
 def findNextID(filename):
     machines = readFile(filename)
     nextid = 0
@@ -83,7 +111,7 @@ def findNextID(filename):
         for log in machine["maintenanceLog"].values():
             if log["id"] > nextid:
                 nextid = log["id"] 
-    nextid += 1
+    nextid += 1 #todo: Implement binary search
     return nextid
     
 
