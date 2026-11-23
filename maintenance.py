@@ -2,8 +2,7 @@ from enum import Enum
 from pydantic import BaseModel
 from pydantic.dataclasses import dataclass
 import datetime
-import json
-import os
+import helperfunctions as h
 
 class Priority(str, Enum):
     high = "high"
@@ -23,7 +22,7 @@ class Maintenance(BaseModel):
 
 def create(Maintenance):
     maintenanceTask = Maintenance(
-        maintenanceId = findNextID("machines.json"), #Automatically increment off last ID
+        maintenanceId = h.findNextID("machines.json"), #Automatically increment off last ID
         description = input(str("Enter description of maintenance : ")),
         date = str(datetime.datetime.strptime(input("Enter date of maintenance YYYY,MM,DD: "), "%Y,%m,%d").date()),
         downtime = input("Enter downtime in hours: "),
@@ -44,7 +43,7 @@ def create(Maintenance):
 
 
 def automaticMaintenance(Maintenance):
-    machineData = readFile("machines.json")
+    machineData = h.readFile("machines.json")
     dayInSeconds = (24*60) *60 #24 hours in seconds
     todaysDate = datetime.datetime(2026, 11, 23, 9, 58, 32) #23rd november 2026 09 hours 58 minutes 32 zeconds
 
@@ -52,19 +51,19 @@ def automaticMaintenance(Maintenance):
     for i in machineData:
         if i["uptime"] >= dayInSeconds or i["maintenanceAlerts"] != "":
             maintenanceTask = Maintenance(
-                maintenanceId = findNextID("machines.json"),
+                maintenanceId = h.findNextID("machines.json"),
                 description = f"Automatic, {i["maintenanceAlerts"]}",
                 date = str(todaysDate.date()),
                 downtime = 1,
                 priority = Priority.medium,
                 cost = 10,
             )
-            writeToFile(maintenanceTask.model_dump(), "maintenance.json")
+            h.writeToFile(maintenanceTask.model_dump(), "maintenance.json")
 
 
 def modifyTask():
     taskID = int(input("Enter the maintenance ID of the task you want to modify: "))
-    maintenanceData = readFile("maintenance.json")
+    maintenanceData = h.readFile("maintenance.json")
     for i in maintenanceData:
         if i["maintenanceId"] == taskID:
             [description] = input("Enter new description (leave blank to keep current): ") or i["description"]
@@ -77,81 +76,23 @@ def modifyTask():
             i["downtime"] = downtime
             i["priority"] = priority
             i["cost"] = cost
-            writeToFile(maintenanceData, "maintenance.json", Isjson="no")
+            h.writeToFile(maintenanceData, "maintenance.json", Isjson="no")
             print(f"Task with ID {taskID} has been modified.")
             pass
 
 def deleteTask():
     taskID = int(input("Enter the maintenance ID of the task you want to delete: "))
-    maintenanceData = readFile("maintenance.json")
+    maintenanceData = h.readFile("maintenance.json")
     for i in maintenanceData:
         if i["maintenanceId"] == taskID:
             maintenanceData.remove(i)
-            writeToFile(maintenanceData, "maintenance.json", Isjson="no")
+            h.writeToFile(maintenanceData, "maintenance.json", Isjson="no")
             print(f"Task with ID {taskID} has been deleted.")
             return
     print(f"No task found with ID {taskID}.")
 
 #-------------------------------------------------------------------------#
-#Helper functions
-def writeToFile(data,filename,Isjson="yes"):
-    if Isjson == "yes":
-        ToJson(data,filename)
 
-    if Isjson == "no":
-        with open(filename,"a+") as file:
-
-            jsondata = json.dumps(data, indent=4)
-            file.write(jsondata)
-
-
-def readFile(filename):
-    with open(filename,"r") as file:
-        data = file.read()
-        data = toDict(data)
-    return data
-
-def toDict(data):
-    return json.loads(data)
-
-def ToJson(data,filename):
-    with open(filename, "r+") as file:
-        if not os.path.exists(filename) or os.path.getsize(filename) == 0:
-            with open(filename, "w") as file:
-                file.write("[\n")
-                json.dump(data, file, indent=4)
-                file.write("\n]")
-            return
-        
-        with open(filename, "r+") as file:
-            lines = file.read().strip()
-            
-            if lines.endswith("]"):
-                file.seek(0, os.SEEK_END)
-                file.seek(file.tell() - 1)
-                file.truncate()    
-    
-                if lines != "[]":
-                    file.seek(0, os.SEEK_END)
-                    file.seek(file.tell() - 2)
-                    file.write(",\n")
-            file.write(json.dumps(data, indent=4))
-            file.write("\n]")
-            
-
-        
-
-
-def findNextID(filename):
-    machines = readFile(filename)
-    nextid = 0
-    for machine in machines:
-        for log in machine["maintenanceLog"].values():
-            if log["id"] > nextid:
-                nextid = log["id"] 
-    nextid += 1 #todo: Implement binary search
-    return nextid
-    
 
 #--------------------#
 
@@ -159,7 +100,7 @@ def findNextID(filename):
 def main():
     while True:
         automaticMaintenance(Maintenance)
-        writeToFile(create(Maintenance), "maintenance.json")
+        h.writeToFile(create(Maintenance), "maintenance.json")
         print(Maintenance)
 
 if __name__ == "__main__":
