@@ -65,13 +65,13 @@ def automaticMaintenance(Maintenance):
 #Helper functions
 def writeToFile(data,filename,Isjson="yes"):
     if Isjson == "yes":
-        ToJson(filename)
-    
-    with open(filename,"a+") as file:
+        ToJson(data,filename)
 
-        jsondata = json.dumps(data, indent=4)
-        file.write(jsondata)
-        file.write("\n")
+    if Isjson == "no":
+        with open(filename,"a+") as file:
+
+            jsondata = json.dumps(data, indent=4)
+            file.write(jsondata)
 
 
 def readFile(filename):
@@ -83,25 +83,32 @@ def readFile(filename):
 def toDict(data):
     return json.loads(data)
 
-def ToJson(filename):
+def ToJson(data,filename):
     with open(filename, "r+") as file:
-                # if not os.path.exists(filename) or os.path.getsize(filename) == 0:
-        #     file.write("[")
-        # else:
-        #     file.seek(0, os.SEEK_END)
-        #     file.seek(file.tell() - 2)
-        #     # file.seek(", /n")
-        lines = file.read().strip()
+        if not os.path.exists(filename) or os.path.getsize(filename) == 0:
+            with open(filename, "w") as file:
+                file.write("[\n")
+                json.dump(data, file, indent=4)
+                file.write("\n]")
+            return
+        
+        with open(filename, "r+") as file:
+            lines = file.read().strip()
+            
+            if lines.endswith("]"):
+                file.seek(0, os.SEEK_END)
+                file.seek(file.tell() - 1)
+                file.truncate()    
+    
+                if lines != "[]":
+                    file.seek(0, os.SEEK_END)
+                    file.seek(file.tell() - 2)
+                    file.write(",\n")
+            file.write(json.dumps(data, indent=4))
+            file.write("\n]")
+            
 
-        if "[" not in lines:
-            file.write("[")
-        elif "]" in lines:
-            file.seek(0, os.SEEK_END)
-            file.seek(file.tell() - 2)
-            file.write(",\n")
-
-        if "]" not in lines:
-            file.write("]")
+        
 
 
 def findNextID(filename):
