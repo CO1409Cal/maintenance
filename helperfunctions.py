@@ -5,9 +5,12 @@ import os
 
 class HelperFunctions:
     #Helper functions
+    #------------------------------------------------------------#
+    #Files
+    @staticmethod    
     def writeToFile(data,filename,Isjson="yes"):
         if Isjson == "yes":
-            ToJson(data,filename) # type: ignore
+            HelperFunctions.toJson(data,filename) 
 
         if Isjson == "no":
             with open(filename,"a+") as file:
@@ -15,17 +18,21 @@ class HelperFunctions:
                 jsondata = json.dumps(data, indent=4)
                 file.write(jsondata)
 
+    @staticmethod
+    def toDict(data): 
+            return json.loads(data)
 
-    def readFile(filename):
-        with open(filename,"r") as file:
+    @staticmethod
+    def readFile(filename): # Open and reads a file then returns a dict of the data
+        with open(filename,"r") as file: 
+            # Python automatically closes the file after its out of scope
             data = file.read()
-            data = toDict(data) # type: ignore
-        return data
-
-    def toDict(data):
-        return json.loads(data)
-
-    def ToJson(data,filename):
+            data = HelperFunctions.toDict(data)
+        return data    
+    #JSON FILES
+    #------------------------------------------------------------#
+    @staticmethod
+    def toJson(data,filename): #Provides better and valid formatting when writing to JSON files
         with open(filename, "r+") as file:
             if not os.path.exists(filename) or os.path.getsize(filename) == 0:
                 with open(filename, "w") as file:
@@ -38,7 +45,7 @@ class HelperFunctions:
                 lines = file.read().strip()
                 
                 if lines.endswith("]"):
-                    file.seek(0, os.SEEK_END)
+                    file.seek(0, os.SEEK_END) 
                     file.seek(file.tell() - 1)
                     file.truncate()    
         
@@ -48,13 +55,23 @@ class HelperFunctions:
                         file.write(",\n")
                 file.write(json.dumps(data, indent=4))
                 file.write("\n]")
-                   
+    #Misc
+    @staticmethod
     def findNextID(filename):
-        machines = readFile(filename) # type: ignore
+        machines = HelperFunctions.readFile(filename) 
         nextid = 0
-        for machine in machines:
-            for log in machine["maintenanceLog"].values():
-                if log["id"] > nextid:
-                    nextid = log["id"] 
+
+        if filename == "machines.json":
+            for machine in machines:
+                for log in machine["maintenanceLog"].values():
+                    if log["id"] > nextid:
+                        nextid = log["id"] 
+        elif filename == "maintenance.json":
+            for task in machines:
+                if task["maintenanceId"] > nextid:
+                    nextid = task["maintenanceId"]
+        else:
+            print("Invalid filename provided. Please use 'machines.json' or 'maintenance.json'.")
+            return None
         nextid += 1 #todo: Implement binary search
         return nextid

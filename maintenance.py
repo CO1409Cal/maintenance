@@ -4,6 +4,8 @@ from pydantic.dataclasses import dataclass
 import datetime
 import helperfunctions as h
 
+h = h.HelperFunctions # Set alias for helper functions
+
 class Priority(str, Enum):
     high = "high"
     medium = "medium"
@@ -22,7 +24,7 @@ class Maintenance(BaseModel):
 
     def create(Maintenance):
         maintenanceTask = Maintenance(
-            maintenanceId = h.findNextID("machines.json"), #Automatically increment off last ID
+            maintenanceId = h.findNextID("maintenance.json"), #Automatically increment off last ID
             description = input(str("Enter description of maintenance : ")),
             date = str(datetime.datetime.strptime(input("Enter date of maintenance YYYY,MM,DD: "), "%Y,%m,%d").date()),
             downtime = input("Enter downtime in hours: "),
@@ -51,7 +53,7 @@ class Maintenance(BaseModel):
         for i in machineData:
             if i["uptime"] >= dayInSeconds or i["maintenanceAlerts"] != "":
                 maintenanceTask = Maintenance(
-                    maintenanceId = h.findNextID("machines.json"),
+                    maintenanceId = h.findNextID("maintenance.json"),
                     description = f"Automatic, {i["maintenanceAlerts"]}",
                     date = str(todaysDate.date()),
                     downtime = 1,
@@ -74,7 +76,7 @@ class Maintenance(BaseModel):
                 i["description"] = description
                 i["date"] = date
                 i["downtime"] = downtime
-                i["priority"] = priority
+                i["priority"] = priority        
                 i["cost"] = cost
                 h.writeToFile(maintenanceData, "maintenance.json", Isjson="no")
                 print(f"Task with ID {taskID} has been modified.")
@@ -86,22 +88,30 @@ class Maintenance(BaseModel):
         for i in maintenanceData:
             if i["maintenanceId"] == taskID:
                 maintenanceData.remove(i)
-                h.writeToFile(maintenanceData, "maintenance.json", Isjson="no")
+                h.writeToFile(maintenanceData, "maintenance.json", Isjson="no") #calls helper function to write data to file
                 print(f"Task with ID {taskID} has been deleted.")
                 return
         print(f"No task found with ID {taskID}.")
 
-#-------------------------------------------------------------------------#
-
+    def displaytask():
+        taskID = int(input("Enter the maintenance ID of the task you want to display: "))
+        maintenanceData = h.readFile("maintenance.json")
+        for i in maintenanceData:
+            if i["maintenanceId"] == taskID:
+                print(i["id"])
+                print(i["description"])
+                print(i["date"])
+                print(i["downtime"])
+                print(i["priority"])
+                print(i["cost"])
 
 #--------------------#
-
 
 def main():
     while True:
         Maintenance.automaticMaintenance(Maintenance)
         h.writeToFile(Maintenance.create(Maintenance), "maintenance.json")
-        print(Maintenance)
+        Maintenance.displaytask()
 
 if __name__ == "__main__":
     main()
