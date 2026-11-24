@@ -7,7 +7,7 @@ class HelperFunctions:
     #Helper functions
     def writeToFile(data,filename,Isjson="yes"):
         if Isjson == "yes":
-            ToJson(data,filename)
+            ToJson(data,filename) # type: ignore
 
         if Isjson == "no":
             with open(filename,"a+") as file:
@@ -19,7 +19,7 @@ class HelperFunctions:
     def readFile(filename):
         with open(filename,"r") as file:
             data = file.read()
-            data = toDict(data)
+            data = toDict(data) # type: ignore
         return data
 
     def toDict(data):
@@ -50,7 +50,7 @@ class HelperFunctions:
                 file.write("\n]")
                    
     def findNextID(filename):
-        machines = readFile(filename)
+        machines = readFile(filename) # type: ignore
         nextid = 0
         for machine in machines:
             for log in machine["maintenanceLog"].values():

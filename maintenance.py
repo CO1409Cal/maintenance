@@ -20,76 +20,76 @@ class Maintenance(BaseModel):
     cost: float  = 0.0
 
 
-def create(Maintenance):
-    maintenanceTask = Maintenance(
-        maintenanceId = h.findNextID("machines.json"), #Automatically increment off last ID
-        description = input(str("Enter description of maintenance : ")),
-        date = str(datetime.datetime.strptime(input("Enter date of maintenance YYYY,MM,DD: "), "%Y,%m,%d").date()),
-        downtime = input("Enter downtime in hours: "),
-        priority = Priority(input("Priority: ")),
-        cost = input("Enter the cost of the Maintenance: ")
-    )
-    maintenanceData = maintenanceTask.model_dump()
-    downtime = maintenanceData["downtime"]
-    if downtime > 1 and downtime < 3 :
-        maintenanceData["type"] = "Routine"
-    elif maintenanceData["priority"] == "high" :
-        maintenanceData["type"] = "Urgent"
-    else:
-        maintenanceData["type"] = "Preventative"
-    print("Maintenance Task Created: ")
+    def create(Maintenance):
+        maintenanceTask = Maintenance(
+            maintenanceId = h.findNextID("machines.json"), #Automatically increment off last ID
+            description = input(str("Enter description of maintenance : ")),
+            date = str(datetime.datetime.strptime(input("Enter date of maintenance YYYY,MM,DD: "), "%Y,%m,%d").date()),
+            downtime = input("Enter downtime in hours: "),
+            priority = Priority(input("Priority: ")),
+            cost = input("Enter the cost of the Maintenance: ")
+        )
+        maintenanceData = maintenanceTask.model_dump()
+        downtime = maintenanceData["downtime"]
+        if downtime > 1 and downtime < 3 :
+            maintenanceData["type"] = "Routine"
+        elif maintenanceData["priority"] == "high" :
+            maintenanceData["type"] = "Urgent"
+        else:
+            maintenanceData["type"] = "Preventative"
+        print("Maintenance Task Created: ")
 
-    return maintenanceData
-
-
-def automaticMaintenance(Maintenance):
-    machineData = h.readFile("machines.json")
-    dayInSeconds = (24*60) *60 #24 hours in seconds
-    todaysDate = datetime.datetime(2026, 11, 23, 9, 58, 32) #23rd november 2026 09 hours 58 minutes 32 zeconds
+        return maintenanceData
 
 
-    for i in machineData:
-        if i["uptime"] >= dayInSeconds or i["maintenanceAlerts"] != "":
-            maintenanceTask = Maintenance(
-                maintenanceId = h.findNextID("machines.json"),
-                description = f"Automatic, {i["maintenanceAlerts"]}",
-                date = str(todaysDate.date()),
-                downtime = 1,
-                priority = Priority.medium,
-                cost = 10,
-            )
-            h.writeToFile(maintenanceTask.model_dump(), "maintenance.json")
+    def automaticMaintenance(Maintenance):
+        machineData = h.readFile("machines.json")
+        dayInSeconds = (24*60) *60 #24 hours in seconds
+        todaysDate = datetime.datetime(2026, 11, 23, 9, 58, 32) #23rd november 2026 09 hours 58 minutes 32 zeconds
 
 
-def modifyTask():
-    taskID = int(input("Enter the maintenance ID of the task you want to modify: "))
-    maintenanceData = h.readFile("maintenance.json")
-    for i in maintenanceData:
-        if i["maintenanceId"] == taskID:
-            [description] = input("Enter new description (leave blank to keep current): ") or i["description"]
-            [date] = input("Enter new date (YYYY-MM-DD) (leave blank to keep current): ") or i["date"]
-            [downtime] = input("Enter new downtime in hours (leave blank to keep current): ") or i["downtime"]
-            [priority] = input("Enter new priority (high, medium, low) (leave blank to keep current): ") or i["priority"]
-            [cost] = input("Enter new cost (leave blank to keep current): ") or i["cost"]
-            i["description"] = description
-            i["date"] = date
-            i["downtime"] = downtime
-            i["priority"] = priority
-            i["cost"] = cost
-            h.writeToFile(maintenanceData, "maintenance.json", Isjson="no")
-            print(f"Task with ID {taskID} has been modified.")
-            pass
+        for i in machineData:
+            if i["uptime"] >= dayInSeconds or i["maintenanceAlerts"] != "":
+                maintenanceTask = Maintenance(
+                    maintenanceId = h.findNextID("machines.json"),
+                    description = f"Automatic, {i["maintenanceAlerts"]}",
+                    date = str(todaysDate.date()),
+                    downtime = 1,
+                    priority = Priority.medium,
+                    cost = 10,
+                )
+                h.writeToFile(maintenanceTask.model_dump(), "maintenance.json")
 
-def deleteTask():
-    taskID = int(input("Enter the maintenance ID of the task you want to delete: "))
-    maintenanceData = h.readFile("maintenance.json")
-    for i in maintenanceData:
-        if i["maintenanceId"] == taskID:
-            maintenanceData.remove(i)
-            h.writeToFile(maintenanceData, "maintenance.json", Isjson="no")
-            print(f"Task with ID {taskID} has been deleted.")
-            return
-    print(f"No task found with ID {taskID}.")
+
+    def modifyTask():
+        taskID = int(input("Enter the maintenance ID of the task you want to modify: "))
+        maintenanceData = h.readFile("maintenance.json")
+        for i in maintenanceData:
+            if i["maintenanceId"] == taskID:
+                [description] = input("Enter new description (leave blank to keep current): ") or i["description"]
+                [date] = input("Enter new date (YYYY-MM-DD) (leave blank to keep current): ") or i["date"]
+                [downtime] = input("Enter new downtime in hours (leave blank to keep current): ") or i["downtime"]
+                [priority] = input("Enter new priority (high, medium, low) (leave blank to keep current): ") or i["priority"]
+                [cost] = input("Enter new cost (leave blank to keep current): ") or i["cost"]
+                i["description"] = description
+                i["date"] = date
+                i["downtime"] = downtime
+                i["priority"] = priority
+                i["cost"] = cost
+                h.writeToFile(maintenanceData, "maintenance.json", Isjson="no")
+                print(f"Task with ID {taskID} has been modified.")
+                pass
+
+    def deleteTask():
+        taskID = int(input("Enter the maintenance ID of the task you want to delete: "))
+        maintenanceData = h.readFile("maintenance.json")
+        for i in maintenanceData:
+            if i["maintenanceId"] == taskID:
+                maintenanceData.remove(i)
+                h.writeToFile(maintenanceData, "maintenance.json", Isjson="no")
+                print(f"Task with ID {taskID} has been deleted.")
+                return
+        print(f"No task found with ID {taskID}.")
 
 #-------------------------------------------------------------------------#
 
@@ -99,8 +99,8 @@ def deleteTask():
 
 def main():
     while True:
-        automaticMaintenance(Maintenance)
-        h.writeToFile(create(Maintenance), "maintenance.json")
+        Maintenance.automaticMaintenance(Maintenance)
+        h.writeToFile(Maintenance.create(Maintenance), "maintenance.json")
         print(Maintenance)
 
 if __name__ == "__main__":
