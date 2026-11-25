@@ -25,11 +25,11 @@ class Maintenance(BaseModel):
     def create(Maintenance):
         maintenanceTask = Maintenance(
             maintenanceId = h.findNextID("maintenance.json"), #Automatically increment off last ID
-            description = input(str("Enter description of maintenance : ")),
-            date = str(datetime.datetime.strptime(input("Enter date of maintenance YYYY,MM,DD: "), "%Y,%m,%d").date()),
-            downtime = input("Enter downtime in hours: "),
-            priority = Priority(input("Priority: ")),
-            cost = input("Enter the cost of the Maintenance: ")
+            description = h.validateinput("str", input("Enter description of maintenance : ")),
+            date = str(datetime.datetime.strptime(h.validateinput("str", input("Enter date of maintenance YYYY,MM,DD: ")), "%Y,%m,%d").date()),
+            downtime = h.validateinput("float", input("Enter downtime in hours: ")),
+            priority = Priority(h.validateinput("str", input("Priority: "))),
+            cost = h.validateinput("float", input("Enter the cost of the Maintenance: "))
         )
         maintenanceData = maintenanceTask.model_dump()
         downtime = maintenanceData["downtime"]
@@ -47,7 +47,7 @@ class Maintenance(BaseModel):
     def automaticMaintenance(Maintenance):
         machineData = h.readFile("machines.json")
         dayInSeconds = (24*60) *60 #24 hours in seconds
-        todaysDate = datetime.datetime(2026, 11, 23, 9, 58, 32) #23rd november 2026 09 hours 58 minutes 32 zeconds
+        todaysDate = datetime.datetime(2026, 11, 25, 9, 58, 32) #25th november 2026 09 hours 58 minutes 32 zeconds
 
 
         for i in machineData:
@@ -56,23 +56,23 @@ class Maintenance(BaseModel):
                     maintenanceId = h.findNextID("maintenance.json"),
                     description = f"Automatic, {i["maintenanceAlerts"]}",
                     date = str(todaysDate.date()),
-                    downtime = 1,
+                    downtime = 1, #todo: Add rule based method to determine downtime
                     priority = Priority.medium,
-                    cost = 10,
-                )
+                    cost = 10, #todo: add rule based method to determine cost
+                )# add auto type determining
                 h.writeToFile(maintenanceTask.model_dump(), "maintenance.json")
 
 
     def modifyTask():
-        taskID = int(input("Enter the maintenance ID of the task you want to modify: "))
+        taskID = h.validateinput("int", input("Enter the maintenance ID of the task you want to modify: "))
         maintenanceData = h.readFile("maintenance.json")
         for i in maintenanceData:
             if i["maintenanceId"] == taskID:
-                [description] = input("Enter new description (leave blank to keep current): ") or i["description"]
-                [date] = input("Enter new date (YYYY-MM-DD) (leave blank to keep current): ") or i["date"]
-                [downtime] = input("Enter new downtime in hours (leave blank to keep current): ") or i["downtime"]
-                [priority] = input("Enter new priority (high, medium, low) (leave blank to keep current): ") or i["priority"]
-                [cost] = input("Enter new cost (leave blank to keep current): ") or i["cost"]
+                [description] = h.validateinput("str", input("Enter new description (leave blank to keep current): ")) or i["description"]
+                [date] = h.validateinput("str", input("Enter new date (YYYY-MM-DD) (leave blank to keep current): ")) or i["date"]
+                [downtime] = h.validateinput("float", input("Enter new downtime in hours (leave blank to keep current): ")) or i["downtime"]
+                [priority] = h.validateinput("str", input("Enter new priority (high, medium, low) (leave blank to keep current): ")) or i["priority"]
+                [cost] = h.validateinput("float", input("Enter new cost (leave blank to keep current): ")) or i["cost"]
                 i["description"] = description
                 i["date"] = date
                 i["downtime"] = downtime
@@ -83,7 +83,7 @@ class Maintenance(BaseModel):
                 pass
 
     def deleteTask():
-        taskID = int(input("Enter the maintenance ID of the task you want to delete: "))
+        taskID = h.validateinput("int", input("Enter the maintenance ID of the task you want to delete: "))
         maintenanceData = h.readFile("maintenance.json")
         for i in maintenanceData:
             if i["maintenanceId"] == taskID:
@@ -94,11 +94,11 @@ class Maintenance(BaseModel):
         print(f"No task found with ID {taskID}.")
 
     def displaytask():
-        taskID = int(input("Enter the maintenance ID of the task you want to display: "))
+        taskID = h.validateinput("int", input("Enter the maintenance ID of the task you want to display: "))
         maintenanceData = h.readFile("maintenance.json")
         for i in maintenanceData:
             if i["maintenanceId"] == taskID:
-                print(i["id"])
+                print(i["maintenanceId"])
                 print(i["description"])
                 print(i["date"])
                 print(i["downtime"])
