@@ -60,7 +60,8 @@ class Maintenance(BaseModel):
                     priority = Priority.medium,
                     cost = 10, #todo: add rule based method to determine cost
                 )# add auto type determining
-                h.writeToFile(maintenanceTask.model_dump(), "maintenance.json")
+                if not h.checkForDuplicates(maintenanceTask.model_dump()):
+                    h.writeToFile(maintenanceTask.model_dump(), "maintenance.json")
 
 
     def modifyTask():

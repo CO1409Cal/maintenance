@@ -7,6 +7,13 @@ class HelperFunctions:
     #Helper functions
     #------------------------------------------------------------#
     #Files
+
+    @staticmethod
+    def initialiseJSON(filename):
+        if not os.path.exists(filename) or os.path.getsize(filename) == 0:
+            with open(filename, "w") as f:
+                json.dump([], f, indent=4)
+
     @staticmethod    
     def writeToFile(data,filename,Isjson="yes"):
         if Isjson == "yes":
@@ -42,12 +49,7 @@ class HelperFunctions:
     @staticmethod
     def toJson(data,filename): #Provides better and valid formatting when writing to JSON files
         with open(filename, "r+") as file:
-            if not os.path.exists(filename) or os.path.getsize(filename) == 0:
-                with open(filename, "w") as file:
-                    file.write("[\n")
-                    json.dump(data, file, indent=4)
-                    file.write("\n]")
-                return
+            HelperFunctions.initialiseJSON(filename)
             
             with open(filename, "r+") as file:
                 lines = file.read().strip()
@@ -92,29 +94,53 @@ class HelperFunctions:
     def validateinput(type, input):
         match type:
             case "int":
-                try:
-                    return int(input)
+                try: return int(input)
                 except ValueError:
                     print("Invalid input. Please enter a valid integer.")
                     return None
             case "float":
-                try:
-                    return float(input)
+                try: return float(input)
                 except ValueError:
                     print("Invalid input. Please enter a valid float.")
                     return None
             case "str":
-                try:
-                    return str(input)
+                try: return str(input)
                 except ValueError:
                     print("Invalid input. Please enter a valid string.") 
                 return None
             case "dict":
-                try:
-                    return dict(input)
+                try: return dict(input)
                 except ValueError:
                     print("Invalid input. Please enter a valid dictionary.")
                     return None
             case _:
                 print("Invalid type specified. Please use 'int', 'float', 'str', or 'dict'.")
                 return None
+
+    @staticmethod
+    def checkForDuplicates(newObject):
+        if hasattr(newObject, "model_dump"):
+            comparisonObject = newObject.model_dump()
+        else:
+            comparisonObject = newObject
+
+        comparisonObject.pop("maintenanceId", None)
+
+        seenLog = "seenLog.json"
+        if os.path.exists(seenLog):
+            with open(seenLog,"r") as s:
+                seen = set((json.load(s)))
+        else:
+            HelperFunctions.initialiseJSON(seenLog)
+            seen = set()
+
+
+        key = json.dumps(comparisonObject, sort_keys=True, default=str)
+
+        if key in seen:
+            return True
+        else:
+            seen.add(key)
+
+        with open(seenLog, "w") as file:
+            json.dump(list(seen), file, indent=4)
